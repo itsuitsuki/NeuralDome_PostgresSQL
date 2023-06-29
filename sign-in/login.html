@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="../assets/css/cayman.css">
+    <link href="../bootstrap-5.3.0-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--    <link rel="stylesheet" href="../assets/css/normalize.css">-->
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="signin.css" rel="stylesheet">
+</head>
+
+<body class="text-center">
+<div class="container mt-md-3">
+    <h1 class="h3 mb-3 fw-normal">Login</h1>
+    <form id="login-form" class="needs-validation w-50 mx-auto" novalidate>
+        <div class="form-floating">
+            <input type="text" class="form-control" id="username" placeholder="example username" required>
+            <label for="username">Username</label>
+            <div class="invalid-feedback">Please enter a valid username.</div>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="password" placeholder="example password" required>
+            <label for="password">Password</label>
+        </div>
+
+<!--        <div class="checkbox mb-3">-->
+<!--            <label>-->
+<!--                <input type="checkbox" value="remember-me">Remember me-->
+<!--            </label>-->
+<!--        </div>-->
+        <button class="w-50 btn btn-lg btn-primary" type="submit">Login</button>
+        <div style="height: 10px;"></div>
+        <a href="register.html"
+           style="color: white; text-decoration: none; height: 100%; width: 100%;">
+            <button class="w-50 btn btn-lg btn-primary" type="button"
+                    style="color:white; text-decoration:none;">
+                Register
+            </button>
+        </a>
+        <div style="height: 10px;"></div>
+        <a href="../index.html"
+           style="color: white; text-decoration: none; height: 100%; width: 100%;">
+            <button class="w-50 btn btn-lg btn-primary" type="button"
+                    style="color:white; text-decoration:none;">
+                Back to main page
+            </button>
+        </a>
+    </form>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(function () {
+        $('#login-form').submit(function (event) {
+            event.preventDefault();
+            $.ajax({
+                url: 'http://localhost:3001/api/login',
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                }),
+                success: function (data) {
+                    // 登录成功，保存token到本地存储
+                    let tmp_token = "bearer " + data.token;
+
+                    localStorage.setItem('token', tmp_token);
+                    // 跳转到其他页面
+                    window.location.href = '../index.html';
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 401 && xhr.responseJSON.error === "invalid username or password") {
+                        alert('Invalid username or password');
+                    } else {
+                        alert('Error: ' + error);
+                    }
+                }
+            });
+        });
+    });
+
+    // 表单验证
+    (function () {
+        "use strict";
+        let forms = document.querySelectorAll(".needs-validation");
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add("was-validated");
+            }, false);
+        });
+    })();
+</script>
+
+
+</body>
+</html>

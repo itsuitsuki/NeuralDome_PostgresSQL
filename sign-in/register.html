@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--<head>-->
+<!--  <title>Register</title>-->
+<!--  &lt;!&ndash; 引入Bootstrap CSS文件 &ndash;&gt;-->
+<!--  <link rel="stylesheet" href="../bootstrap-5.3.0-dist/css/bootstrap.min.css">-->
+<!--</head>-->
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="../assets/css/cayman.css">
+    <link href="../bootstrap-5.3.0-dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+    <!-- Custom styles for this template -->
+    <link href="signin.css" rel="stylesheet">
+</head>
+
+
+<body class="text-center">
+<div class="container mt-md-3">
+    <h1 class="h3 mb-3 fw-normal">Register</h1>
+    <form id="register-form" class="needs-validation w-50 mx-auto" novalidate>
+        <div class="form-floating">
+            <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+            <label for="email" class="form-label">Email address</label>
+            <div class="invalid-feedback">Please enter a valid email address.</div>
+        </div>
+        <div class="form-floating">
+            <input type="text" class="form-control" id="username" placeholder="example username" required>
+            <label for="username">Username</label>
+            <div class="invalid-feedback">Please enter a valid username.</div>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="password" placeholder="example pwd" required>
+            <label for="password" class="form-label">Password</label>
+            <div class="invalid-feedback">Please enter a password.</div>
+        </div>
+        <!--        <div class="form-floating">-->
+        <!--            <input type="password" class="form-control" id="confirm-password" placeholder="example pwd"-->
+        <!--                   name="confirm-password" required>-->
+        <!--            <label for="confirm-password" class="form-label">Confirm Password</label>-->
+        <!--            <div class="invalid-feedback">Please confirm your password.</div>-->
+        <!--        </div>-->
+        <div class="form-floating">
+            <label for="verification-code" class="form-label">Verification Code</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="verification-code" name="verification-code" required>
+                <button type="button" class="btn btn-primary" id="send-verification-code">Send Code</button>
+                <div class="invalid-feedback">Please enter the verification code.</div>
+            </div>
+        </div>
+        <button class="w-50 btn btn-lg btn-primary" type="submit">Register</button>
+
+        <div style="height: 10px;"></div>
+        <a href="login.html"
+           style="color: white; text-decoration: none; height: 100%; width: 100%;">
+            <button class="w-50 btn btn-lg btn-primary" type="button"
+                    style="color:white; text-decoration:none;">
+                Back to Login
+            </button>
+        </a>
+        <div style="height: 10px;"></div>
+        <a href="../index.html"
+           style="color: white; text-decoration: none; height: 100%; width: 100%;">
+            <button class="w-50 btn btn-lg btn-primary" type="button"
+                    style="color:white; text-decoration:none;">
+                Back to main page
+            </button>
+        </a>
+    </form>
+</div>
+<!-- 引入Bootstrap JavaScript文件和jQuery库 -->
+<script src="../bootstrap-5.3.0-dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let veri_code = null;
+    // 发送验证码
+    $("#send-verification-code").click(function () {
+        let email = $("#email").val();
+        let username = $("#username").val();
+        let password = $("#password").val();
+
+        // 检查邮箱和密码是否为空
+        if (email === "" || password === "") {
+            alert("Please enter both email and password.");
+            return false; // 阻止表单提交
+        }
+
+        $.ajax({
+            url: "http://localhost:3001/api/register",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json",
+            data: JSON.stringify({
+                email: email,
+                username: username,
+            }),
+            success: function (response) {
+                alert("Verification code sent.");
+                veri_code = response.code;
+            },
+            error: function (xhr, status, error) { // xhr : XML HTTP Request
+                // xhr.reponseType = 'json';
+                if (xhr.status === 400 && xhr.responseJSON.error === "email has been registered") {
+                    alert("Email has been registered.");
+                } else if (xhr.status === 404 && xhr.responseJSON.error === "wrong email address") {
+                    alert("Wrong Email address.");
+                } else {
+                    alert("Error: " + error + "; With code: " + xhr.status)
+                }
+                veri_code = null;
+            }
+        });
+    });
+
+    // 注册
+    $("#register-form").submit(function (event) {
+        event.preventDefault();
+
+        let email = $("#email").val();
+        let password = $("#password").val();
+        let username = $("#username").val();
+        let veri_code_written = $("#verification-code").val();
+
+        // 校验验证码
+        if (veri_code === null) {
+            alert("Please send the verification code. (or it's null.)")
+            return false;
+        } else if (veri_code_written !== veri_code) {
+            alert("Verification code is incorrect. Please try again.");
+            form.find("#verification-code").val(""); // 清空验证码输入框
+            return false; // 阻止表单提交
+        }
+        $.ajax({
+            url: "http://localhost:3001/api/users",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json",
+            data: JSON.stringify({
+                email: email,
+                username: username,
+                password: password
+            }),
+            success: function (response) {
+                let code = response.code;
+                alert("Registration successful. Please log in.");
+                location.href = "/login.html";
+            },
+            error: function (xhr, status, error) {
+                alert("Error: " + error);
+            }
+        });
+    });
+
+    // 表单验证
+    (function () {
+        "use strict";
+        let forms = document.querySelectorAll(".needs-validation");
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add("was-validated");
+            }, false);
+        });
+    })();
+</script>
+</body>
+</html>
